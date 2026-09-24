@@ -49,7 +49,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
     @objc private func indexChanged() { store.reload() }
 
     func popoverDidClose(_ notification: Notification) {
+        lastClose = Date()
         anchorWindow?.orderOut(nil)
+        if let m = clickMonitor { NSEvent.removeMonitor(m); clickMonitor = nil }
     }
 
     private func writeSnapshot(to path: String) {
@@ -69,9 +71,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
     // button in the accent colour for as long as the popover is open. Anchor
     // it to an invisible window sitting under the button instead.
     private var anchorWindow: NSWindow?
+    private var clickMonitor: Any?
+    private var lastClose = Date.distantPast
 
     @objc private func togglePanel(_ sender: Any?) {
         if popover.isShown { popover.performClose(sender); return }
+        // The mouse-down that closes a transient popover and the mouse-up that
+        // fires this action are the same click on the icon; do not reopen.
+        if Date().timeIntervalSince(lastClose) < 0.3 { return }
         guard let button = statusItem.button, let buttonWindow = button.window else { return }
         store.reload()
         let screenRect = buttonWindow.convertToScreen(button.convert(button.bounds, to: nil))
@@ -90,6 +97,15 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
         anchor.orderFrontRegardless()
         guard let anchorView = anchor.contentView else { return }
         popover.show(relativeTo: anchorView.bounds, of: anchorView, preferredEdge: .minY)
+        NSApp.activate(ignoringOtherApps: true)
         popover.contentViewController?.view.window?.makeKey()
+        // Transient popovers only close on clicks the app is told about; an
+        // accessory app often is not. Watch every click and close on any that
+        // lands outside the panel.
+        clickMonitor = NSEvent.addGlobalMonitorForEvents(matching: [.leftMouseDown, .rightMouseDown]) { [weak self] event in
+            guard let self, self.popover.isShown else { return }
+            if let panel = self.popover.contentViewController?.view.window, panel.frame.contains(NSEvent.mouseLocation) { return }
+            self.popover.performClose(nil)
+        }
     }
 }
