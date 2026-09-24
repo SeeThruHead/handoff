@@ -16,6 +16,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
             button.action = #selector(togglePanel(_:))
             button.target = self
             button.sendAction(on: [.leftMouseUp, .rightMouseUp])
+            (button.cell as? NSButtonCell)?.highlightsBy = []
         }
 
         popover = NSPopover()
@@ -47,6 +48,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
 
     @objc private func indexChanged() { store.reload() }
 
+    func popoverDidClose(_ notification: Notification) {
+        anchorWindow?.orderOut(nil)
+    }
+
     private func writeSnapshot(to path: String) {
         guard let view = popover.contentViewController?.view else { return }
         writeSnapshot(of: view, to: path)
@@ -60,11 +65,31 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
         }
     }
 
+    // Anchoring the popover to the status item button makes AppKit paint the
+    // button in the accent colour for as long as the popover is open. Anchor
+    // it to an invisible window sitting under the button instead.
+    private var anchorWindow: NSWindow?
+
     @objc private func togglePanel(_ sender: Any?) {
         if popover.isShown { popover.performClose(sender); return }
-        guard let button = statusItem.button else { return }
+        guard let button = statusItem.button, let buttonWindow = button.window else { return }
         store.reload()
-        popover.show(relativeTo: button.bounds, of: button, preferredEdge: .minY)
+        let screenRect = buttonWindow.convertToScreen(button.convert(button.bounds, to: nil))
+        let anchor = anchorWindow ?? {
+            let w = NSWindow(contentRect: screenRect, styleMask: .borderless, backing: .buffered, defer: false)
+            w.isOpaque = false
+            w.backgroundColor = .clear
+            w.hasShadow = false
+            w.ignoresMouseEvents = true
+            w.level = .statusBar
+            w.collectionBehavior = [.canJoinAllSpaces, .stationary]
+            anchorWindow = w
+            return w
+        }()
+        anchor.setFrame(screenRect, display: false)
+        anchor.orderFrontRegardless()
+        guard let anchorView = anchor.contentView else { return }
+        popover.show(relativeTo: anchorView.bounds, of: anchorView, preferredEdge: .minY)
         popover.contentViewController?.view.window?.makeKey()
     }
 }
