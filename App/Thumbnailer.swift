@@ -1,7 +1,7 @@
 import Cocoa
 import WebKit
 
-/// Builds 320x200 previews: images are scaled, HTML and rendered markdown are
+/// Builds 320x200 previews: images are scaled, HTML is
 /// snapshotted in an offscreen web view. Everything else gets no thumbnail and
 /// the panel shows a kind icon instead.
 final class Thumbnailer: NSObject, WKNavigationDelegate {

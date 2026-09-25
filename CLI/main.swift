@@ -3,13 +3,12 @@ import Cocoa
 let usage = """
 usage: handoff <file> [--title "..."] [--no-open] [--no-copy]
        handoff put <file> [--title "..."]      register + copy to clipboard, do not open
-       handoff open <file> [--title "..."]     register + open (markdown is rendered first), do not copy
+       handoff open <file> [--title "..."]     register + open, do not copy
        handoff list                            print the current index
 
 Registers the file with the Handoff tray app, copies it to the clipboard as one
-item (file URL, path text, PNG for images) and opens it: markdown is rendered
-with grip and the HTML opened in the browser; HTML opens in the browser;
-anything else opens in its default app.
+item (file URL, path text, PNG for images) and opens the original file in its
+default app. Nothing is written next to it.
 """
 
 var args = Array(CommandLine.arguments.dropFirst())
@@ -48,12 +47,7 @@ guard FileManager.default.fileExists(atPath: url.path) else {
 }
 
 let kind = ArtifactKind.of(url)
-let rendered: URL? = kind == .markdown ? Render.markdown(url) : nil
-if kind == .markdown && rendered == nil {
-    FileHandle.standardError.write("handoff: grip not found or failed; opening the markdown itself\n".data(using: .utf8)!)
-}
-
-let artifact = ArtifactIndex.make(url: url, title: title, renderedPath: rendered?.path)
+let artifact = ArtifactIndex.make(url: url, title: title, renderedPath: nil)
 _ = ArtifactIndex.add(artifact)
 
 if doCopy {

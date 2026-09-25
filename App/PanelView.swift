@@ -98,7 +98,6 @@ struct ArtifactRow: View {
                         Button("Path") { store.copyPath(artifact); flash() }
                         Menu {
                             Button("Open") { store.open(artifact) }
-                            if artifact.kind == .markdown { Button("Open markdown source") { NSWorkspace.shared.open(artifact.url) } }
                             Button("Reveal in Finder") { store.reveal(artifact) }
                             Divider()
                             Button("Remove from list", role: .destructive) { store.remove(artifact) }

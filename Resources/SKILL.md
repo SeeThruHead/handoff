@@ -15,7 +15,7 @@ What it does, in one step:
 
 - Registers the file in the Handoff menu bar panel, where the user can click to open it, drag it into Slack or a prompt, copy it, or copy its path.
 - Copies it to the clipboard as one item with several representations: pasting into Slack or Finder gives the file, pasting into a terminal or Claude gives the path (or the image, for images).
-- Opens it: markdown is rendered with grip and the HTML opened in the browser; HTML opens in the browser; other files open in their default app.
+- Opens the original file in its default app. Nothing is rendered or written anywhere.
 
 Variants:
 

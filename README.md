@@ -19,9 +19,9 @@ handoff <file> [--title "Short human title"]
 
 One call, three effects:
 
-- The file is registered in the panel (newest first, grouped by day, thumbnail for images, HTML and rendered markdown).
+- The file is registered in the panel (newest first, grouped by day, thumbnail for images and HTML).
 - It is copied to the clipboard as a single item with several representations: paste into Slack or Finder and you get the file; paste into a terminal or Claude and you get the path (or the image, for images).
-- It is opened: markdown is rendered with [grip](https://github.com/joeyespo/grip) and the HTML opened in the browser; HTML opens in the browser; anything else opens in its default app.
+- It is opened: the original file opens in its default app. Nothing is rendered or written next to it.
 
 `handoff put <file>` registers and copies without opening. `handoff open <file>` registers and opens without touching the clipboard. `handoff list` prints the index.
 
@@ -41,7 +41,7 @@ The bundled skill (`~/.agents/skills/handoff/SKILL.md`) tells Claude Code, Pi, C
 open build/Handoff.app
 ```
 
-Requires Xcode command line tools. `grip` (`brew install grip`) is needed for markdown rendering.
+Requires Xcode command line tools.
 
 ## Debugging
 

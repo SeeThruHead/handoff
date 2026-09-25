@@ -40,12 +40,7 @@ struct Artifact: Codable, Identifiable, Equatable {
     var renderedURL: URL? { renderedPath.map { URL(fileURLWithPath: $0) } }
     var exists: Bool { FileManager.default.fileExists(atPath: path) }
 
-    var openURL: URL {
-        if kind == .markdown, let rendered = renderedURL, FileManager.default.fileExists(atPath: rendered.path) {
-            return rendered
-        }
-        return url
-    }
+    var openURL: URL { url }
 }
 
 enum HandoffPaths {
